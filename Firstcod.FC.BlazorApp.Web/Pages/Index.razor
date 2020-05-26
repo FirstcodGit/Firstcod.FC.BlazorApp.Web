@@ -1,0 +1,163 @@
+﻿@page "/"
+@inject UserService userService
+
+<div class="col">
+
+    <div class="btn-group mt-5" role="group" aria-label="Basic example">
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">New User</button>
+
+    </div>
+
+    <div class="col p-5">
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email Address</th>
+                    <th>Create Date</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in userList)
+                {
+                <tr>
+                    <td>@item.FirstName</td>
+                    <td>@item.LastName</td>
+                    <td>@item.EmailAddress</td>
+                    <td>@string.Format("{0:dd MMMM yyyy}", item.CreateDate)</td>
+                    <td>
+                        <button class="btn btn-warning" @onclick="@( () => EditForm(item.Id))" data-toggle="modal" data-target="#editModal">Edit</button>
+                        <button class="btn btn-danger" @onclick="@(() => DeleteForm(item.Id))">Delete</button>
+                    </td>
+                </tr>
+                }
+            </tbody>
+        </table>
+
+    </div>
+
+</div>
+
+<div class="modal fade" tabindex="-1" id="exampleModal" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <EditForm Model="@user" OnValidSubmit="@RegisterForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="InputEmail">Email address</label>
+                        <input type="email" class="form-control" id="InputEmail" @bind-value="user.EmailAddress" />
+                    </div>
+                    <div class="form-group">
+                        <label for="InputFirstName">FirstName</label>
+                        <input type="text" class="form-control" id="InputFirstName" @bind-value="user.FirstName" />
+                    </div>
+                    <div class="form-group">
+                        <label for="InputLastName">LastName</label>
+                        <input type="text" class="form-control" id="InputLastName" @bind-value="user.LastName" />
+                    </div>
+                    <div class="form-group form-check">
+                        <input type="checkbox" class="form-check-input" id="exampleCheck">
+                        <label class="form-check-label" for="exampleCheck">Check me out</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" data-dismiss="modal">Save changes</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="editModal" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <EditForm Model="@user" OnValidSubmit="@EditForms">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="InputEmail">Email address</label>
+                        <input type="email" class="form-control" id="InputEmail" @bind-value="user.EmailAddress" />
+                    </div>
+                    <div class="form-group">
+                        <label for="InputFirstName">FirstName</label>
+                        <input type="text" class="form-control" id="InputFirstName" @bind-value="user.FirstName" />
+                    </div>
+                    <div class="form-group">
+                        <label for="InputLastName">LastName</label>
+                        <input type="text" class="form-control" id="InputLastName" @bind-value="user.LastName" />
+                    </div>
+                    <div class="form-group form-check">
+                        <input type="checkbox" class="form-check-input" id="exampleCheck">
+                        <label class="form-check-label" for="exampleCheck">Check me out</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" data-dismiss="modal">Save changes</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    List<User> userList = new List<User>();
+
+    private User user = new User();
+
+    private void RegisterForm()
+    {
+        Console.WriteLine(user);
+
+        var response = userService.InsertUser(user);
+
+        if(response != null)
+            userList = response.ToList();
+
+        user = new User();
+    }
+
+    private void EditForm(long id)
+    {
+        user = userService.GetUser(id);
+    }
+
+    private void EditForms()
+    {
+        var response = userService.UpdateUser(user);
+
+        if(response != null)
+            userList = response.ToList();
+
+        user = new User();
+    }
+
+    private void DeleteForm(long id)
+    {
+        var response = userService.DeleteUser(id);
+
+        if (response != null)
+            userList = response.ToList();
+    }
+
+    protected override void OnInitialized()
+    {
+        userList = userService.GetUser();
+    }
+}
